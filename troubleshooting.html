@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redowansky — Troubleshooting</title>
+<script>try{var t=localStorage.getItem('rsp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+  :root{
+    --bg:#0e0e13; --card:#1a1a23; --card2:#22222e; --line:#2a2a38;
+    --text:#ffffff; --muted:#9a9aa8; --green:#3ddc84; --btn:#16a34a;
+    --btn2:#15803d; --red:#ff6b6b; --redbg:#3a1f26; --green2:#4ade80; --greenbg:#1c3226;
+    --code:#bbf7d0; --overlay:rgba(0,0,0,.6);
+  }
+  html[data-theme="light"]{
+    --bg:#f4f4f6; --card:#ffffff; --card2:#ececf1; --line:#dcdce2;
+    --text:#14141a; --muted:#5c5c66; --green:#15803d; --btn:#16a34a;
+    --btn2:#15803d; --red:#d92d20; --redbg:#ffe3e3; --green2:#15803d; --greenbg:#dcfce7;
+    --code:#15803d; --overlay:rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif}
+  a{color:var(--green);text-decoration:none}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px 64px}
+  .top{display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px;max-width:960px;margin:0 auto;position:relative}
+  .brand{font-size:20px;font-weight:700;letter-spacing:.2px;color:var(--text)}
+  .topbtns{display:flex;gap:14px;align-items:center}
+  .iconbtn{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px}
+  .panel{position:absolute;right:20px;top:58px;background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:8px;min-width:230px;display:none;z-index:10}
+  .panel.open{display:block}
+  .panel a.pitem{display:block;color:var(--text);padding:12px;border-radius:8px;border-bottom:1px solid var(--line)}
+  .panel a.pitem:last-of-type{border-bottom:0}
+  .panel a.pitem:hover{background:var(--card)}
+  .panel .prow{display:flex;align-items:center;justify-content:space-between;
+    padding:12px;color:var(--text);border-bottom:1px solid var(--line)}
+  .panel .psocial{display:flex;gap:14px;padding:12px 12px 6px}
+  .panel .psocial a{color:var(--text)}
+  .switch{background:var(--card);color:var(--text);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;cursor:pointer;font-size:16px}
+  .menubar{display:flex;align-items:center;justify-content:space-between;
+    max-width:960px;margin:0 auto;padding:10px 20px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--bg);z-index:5}
+  .menubar button{background:none;border:0;color:var(--text);font-size:16px;cursor:pointer;padding:6px 2px}
+  .hero{padding:34px 0 8px}
+  .hero h1{margin:0;font-size:56px;line-height:1.05;color:var(--green);letter-spacing:-.5px}
+  .hero p{margin:14px 0 22px;color:var(--muted);font-size:19px}
+  .pills{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;border:0;cursor:pointer;font-size:16px;font-weight:600;
+    padding:13px 24px;border-radius:999px;text-align:center}
+  .btn-green{background:var(--btn);color:#fff}
+  .btn-green:hover{background:var(--btn2)}
+  .btn-dark{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--green)}
+  .infogrid{display:grid;grid-template-columns:1fr;gap:16px;margin:30px 0 8px}
+  @media(min-width:640px){.infogrid{grid-template-columns:1fr 1fr}}
+  .infocard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .infocard .ic{font-size:26px}
+  .infocard h3{margin:14px 0 8px;font-size:19px}
+  .infocard p{margin:0 0 14px;color:var(--muted);line-height:1.5}
+  .infocard .go{font-weight:600}
+  .infocard .ver{color:var(--green);font-weight:700}
+  h2.sec{font-size:36px;margin:40px 0 4px}
+  h3.sub{font-size:22px;margin:32px 0 4px}
+  .note{color:var(--muted);font-size:15px;line-height:1.5;margin:8px 0 20px}
+  .urlbox{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;display:flex;gap:10px;align-items:center;margin:8px 0}
+  .urlbox code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    color:var(--muted);font-size:13px}
+  .urlbox button{background:var(--card2);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+  label.lbl{display:block;margin:20px 0 8px;font-size:17px}
+  input[type=search],select{width:100%;background:var(--card);color:var(--text);
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-size:16px;outline:none}
+  input[type=search]::placeholder{color:#6f6f7d}
+  input[type=search]:focus,select:focus{border-color:var(--green)}
+  .radios{display:flex;gap:18px;flex-wrap:wrap}
+  .radios label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px}
+  .radios input{accent-color:var(--green);width:18px;height:18px}
+  hr.sep{border:0;border-top:1px solid var(--line);margin:34px 0 20px}
+  .counts{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  .counts .all{font-size:30px;font-weight:800}
+  .counts .src{font-size:30px;font-weight:800;color:var(--green)}
+  .counts .ext{color:var(--muted);font-size:17px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px;display:flex;align-items:center;gap:14px}
+  .card img{width:52px;height:52px;border-radius:12px;flex-shrink:0}
+  .card .meta{flex:1;min-width:0}
+  .card .name{font-size:19px;font-weight:700}
+  .card .sub{color:var(--muted);font-size:14px;margin-top:2px}
+  .badge{font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;white-space:nowrap}
+  .badge.nsfw{background:var(--redbg);color:var(--red)}
+  .badge.safe{background:var(--greenbg);color:var(--green2)}
+  .dl{font-size:26px;color:var(--green);padding:6px;text-decoration:none}
+  .empty{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px;text-align:center;color:var(--muted);margin-top:18px}
+  .empty.show{display:block}
+  .help h3{margin:0 0 8px}
+  .help p{color:var(--muted);line-height:1.55;margin:0}
+  .help code{color:var(--code);font-size:14px;word-break:break-all}
+  .banner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:24px 0}
+  .banner h3{margin:0 0 8px}
+  .banner p{color:var(--muted);line-height:1.55;margin:0}
+  .modal{display:none;position:fixed;inset:0;background:var(--overlay);z-index:50;
+    align-items:flex-start;justify-content:center;padding:80px 20px 20px}
+  .modal.open{display:flex}
+  .modal-box{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:560px;padding:20px}
+  .modal-box input{margin-bottom:12px}
+  .sres a{display:flex;justify-content:space-between;gap:12px;color:var(--text);
+    padding:12px;border-radius:10px}
+  .sres a:hover{background:var(--card2)}
+  .sres .ssub{color:var(--muted);font-size:13px}
+  .hint{color:var(--muted);font-size:13px;margin:12px 0 0}
+  footer{margin-top:48px;color:#6f6f7d;font-size:13px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="top">
+    <a class="brand" href="index.html">Redowansky</a>
+    <div class="topbtns">
+      <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
+      <button class="iconbtn" id="menuBtn" aria-label="Menu" onclick="togglePanel()">☰</button>
+    </div>
+    <div class="panel" id="panel">
+      <a class="pitem" href="troubleshooting.html" onclick="closePanel()">Guide</a>
+      <a class="pitem" href="mihon.html" onclick="closePanel()">Mihon extensions</a>
+      <a class="pitem" href="aniyomi.html" onclick="closePanel()">Aniyomi extensions</a>
+      <div class="prow"><span>Appearance</span><button class="switch" id="themeSwitch" onclick="toggleTheme()">🌙</button></div>
+      <div class="psocial"><a href="https://github.com/Redowansky/spice-rack"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div>
+    </div>
+  </div><div class="menubar"><button onclick="togglePanel()">☰ Menu</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">Return to top ↑</button></div><div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
+    <div class="modal-box">
+      <input type="search" id="globalQ" placeholder="Search extensions and guides..." oninput="globalSearch()">
+      <div class="sres" id="globalResults"></div>
+      <p class="hint">Esc to close</p>
+    </div>
+  </div><div class="wrap">
+    <div class="hero">
+      <h1>Troubleshooting</h1>
+      <p>Guide for the Redowansky extension store.</p>
+      <div class="pills">
+        <a class="btn btn-green" href="#adding">Add the store</a>
+        <a class="btn btn-dark" href="index.html">← Back to store</a>
+      </div>
+    </div>
+
+    <h2 class="sec" id="adding">Adding the extension store</h2>
+    <h3 class="sub">Before you start</h3>
+    <p class="note">You need Mihon 0.21.3 or newer, or a recent Aniyomi, on an Android device. The store buttons below only work on Android with the app installed.</p>
+    <div class="pills">
+      <a class="btn btn-green" href="mihon://extension-store?url=https%3A%2F%2Fraw.githubusercontent.com%2FRedowansky%2Fspice-rack%2Frepo%2Findex.pb">Add store to Mihon</a>
+      <a class="btn btn-outline" href="aniyomi://add-repo?url=https://raw.githubusercontent.com/Redowansky/spice-rack/repo/aniyomi/index.min.json">Add store to Aniyomi</a>
+    </div>
+    <h3 class="sub" id="manual">Adding the store manually</h3>
+    <p class="note">Mihon: More → Settings → Browse → Extension repos → paste the Mihon URL.<br>Aniyomi: More → Settings → Browse → Anime extension repos → paste the Aniyomi URL.</p>
+    <div class="urlbox"><code id="urlM">https://raw.githubusercontent.com/Redowansky/spice-rack/repo/index.pb</code><button onclick="copyUrl('urlM',this)">Copy</button></div>
+    <div class="urlbox"><code id="urlA">https://raw.githubusercontent.com/Redowansky/spice-rack/repo/aniyomi/index.min.json</code><button onclick="copyUrl('urlA',this)">Copy</button></div>
+    <h3 class="sub">Reinstall the extensions</h3>
+    <p class="note">If an extension misbehaves after a store change, remove it in the app and install it again from the store list inside the app — not from a sideloaded APK.</p>
+
+    <h2 class="sec">Troubleshooting</h2>
+    <div class="infogrid help">
+      <div class="infocard" id="untrusted">
+        <h3>⚠️ App says the extension is Untrusted?</h3>
+        <p>Normal for this store — the extensions are signed with our own key, not a public store key. Tap Trust to install.</p>
+      </div>
+      <div class="infocard" id="banner">
+        <h3>⚠️ "Not associated with any store" banner?</h3>
+        <p>That shows on sideloaded APKs. Add the store first (buttons above), then install the extension from inside the app — the banner goes away and updates work.</p>
+      </div>
+    </div>
+
+    <div class="banner" id="outdated">
+      <h3>⚠️ Extension list says my app is outdated</h3>
+      <p>If you are seeing an empty extension list with the message "Outdated app", your app is no longer compatible with this store's extensions. Make sure your app is updated to the latest version! This store supports Mihon and Aniyomi.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">← Back to store</a> · Redowansky's extension store · github.com/Redowansky/spice-rack
+    </footer>
+  </div>
+<script>
+const SEARCH_INDEX = [{"t":"NHentai.xxx","s":"Mihon extension \u00b7 v1.6.12","u":"mihon.html?q=NHentai"},{"t":"Redowansky's Library","s":"Aniyomi extension \u00b7 v16.1","u":"aniyomi.html?q=Redowansky"},{"t":"Adding the extension store","s":"Guide","u":"troubleshooting.html#adding"},{"t":"App says the extension is Untrusted?","s":"Guide","u":"troubleshooting.html#untrusted"},{"t":"Not associated with any store banner?","s":"Guide","u":"troubleshooting.html#banner"},{"t":"Add the store manually","s":"Guide","u":"troubleshooting.html#manual"},{"t":"Extension list says my app is outdated","s":"Guide","u":"troubleshooting.html#outdated"}];
+
+function togglePanel(){
+  const p = document.getElementById('panel');
+  const b = document.getElementById('menuBtn');
+  const open = p.classList.toggle('open');
+  if (b) b.textContent = open ? '✕' : '☰';
+}
+function closePanel(){
+  const p = document.getElementById('panel');
+  const b = document.getElementById('menuBtn');
+  if (p) p.classList.remove('open');
+  if (b) b.textContent = '☰';
+}
+function applyThemeIcon(){
+  const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const s = document.getElementById('themeSwitch');
+  if (s) s.textContent = dark ? '🌙' : '☀️';
+}
+function toggleTheme(){
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+  try { localStorage.setItem('rsp-theme', next); } catch (e) {}
+  applyThemeIcon();
+}
+function openSearch(){
+  const m = document.getElementById('searchModal');
+  m.classList.add('open');
+  const q = document.getElementById('globalQ');
+  q.value = ''; q.focus(); globalSearch();
+}
+function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+function globalSearch(){
+  const q = (document.getElementById('globalQ').value || '').trim().toLowerCase();
+  const box = document.getElementById('globalResults');
+  const hits = SEARCH_INDEX.filter(e => !q || (e.t + ' ' + e.s).toLowerCase().includes(q));
+  box.innerHTML = hits.length ? hits.map(e =>
+    '<a href="' + e.u + '"><span>' + e.t + '</span><span class="ssub">' + e.s + '</span></a>').join('')
+    : '<p class="hint">No matches. Try an extension name or a guide topic.</p>';
+}
+function copyUrl(id, btn){
+  const t = document.getElementById(id).textContent;
+  const done = () => { btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done, done); }
+  else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+}
+applyThemeIcon();
+
+
+</script>
+</body>
+</html>

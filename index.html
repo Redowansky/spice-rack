@@ -4,11 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Redowansky — Extension store</title>
+<script>try{var t=localStorage.getItem('rsp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
 <style>
   :root{
     --bg:#0e0e13; --card:#1a1a23; --card2:#22222e; --line:#2a2a38;
     --text:#ffffff; --muted:#9a9aa8; --green:#3ddc84; --btn:#16a34a;
     --btn2:#15803d; --red:#ff6b6b; --redbg:#3a1f26; --green2:#4ade80; --greenbg:#1c3226;
+    --code:#bbf7d0; --overlay:rgba(0,0,0,.6);
+  }
+  html[data-theme="light"]{
+    --bg:#f4f4f6; --card:#ffffff; --card2:#ececf1; --line:#dcdce2;
+    --text:#14141a; --muted:#5c5c66; --green:#15803d; --btn:#16a34a;
+    --btn2:#15803d; --red:#d92d20; --redbg:#ffe3e3; --green2:#15803d; --greenbg:#dcfce7;
+    --code:#15803d; --overlay:rgba(0,0,0,.4);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
@@ -20,11 +28,22 @@
   .brand{font-size:20px;font-weight:700;letter-spacing:.2px;color:var(--text)}
   .topbtns{display:flex;gap:14px;align-items:center}
   .iconbtn{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px}
-  .menu{position:absolute;right:20px;top:58px;background:var(--card2);border:1px solid var(--line);
-    border-radius:12px;padding:8px;min-width:200px;display:none;z-index:5}
-  .menu.open{display:block}
-  .menu a{display:block;color:var(--text);padding:10px 12px;border-radius:8px}
-  .menu a:hover{background:var(--card)}
+  .panel{position:absolute;right:20px;top:58px;background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:8px;min-width:230px;display:none;z-index:10}
+  .panel.open{display:block}
+  .panel a.pitem{display:block;color:var(--text);padding:12px;border-radius:8px;border-bottom:1px solid var(--line)}
+  .panel a.pitem:last-of-type{border-bottom:0}
+  .panel a.pitem:hover{background:var(--card)}
+  .panel .prow{display:flex;align-items:center;justify-content:space-between;
+    padding:12px;color:var(--text);border-bottom:1px solid var(--line)}
+  .panel .psocial{display:flex;gap:14px;padding:12px 12px 6px}
+  .panel .psocial a{color:var(--text)}
+  .switch{background:var(--card);color:var(--text);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;cursor:pointer;font-size:16px}
+  .menubar{display:flex;align-items:center;justify-content:space-between;
+    max-width:960px;margin:0 auto;padding:10px 20px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--bg);z-index:5}
+  .menubar button{background:none;border:0;color:var(--text);font-size:16px;cursor:pointer;padding:6px 2px}
   .hero{padding:34px 0 8px}
   .hero h1{margin:0;font-size:56px;line-height:1.05;color:var(--green);letter-spacing:-.5px}
   .hero p{margin:14px 0 22px;color:var(--muted);font-size:19px}
@@ -33,8 +52,8 @@
     padding:13px 24px;border-radius:999px;text-align:center}
   .btn-green{background:var(--btn);color:#fff}
   .btn-green:hover{background:var(--btn2)}
-  .btn-dark{background:var(--card2);color:#fff;border:1px solid var(--line)}
-  .btn-outline{background:transparent;color:#fff;border:1px solid var(--green)}
+  .btn-dark{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--green)}
   .infogrid{display:grid;grid-template-columns:1fr;gap:16px;margin:30px 0 8px}
   @media(min-width:640px){.infogrid{grid-template-columns:1fr 1fr}}
   .infocard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
@@ -44,12 +63,13 @@
   .infocard .go{font-weight:600}
   .infocard .ver{color:var(--green);font-weight:700}
   h2.sec{font-size:36px;margin:40px 0 4px}
+  h3.sub{font-size:22px;margin:32px 0 4px}
   .note{color:var(--muted);font-size:15px;line-height:1.5;margin:8px 0 20px}
   .urlbox{background:var(--card);border:1px solid var(--line);border-radius:10px;
     padding:10px 12px;display:flex;gap:10px;align-items:center;margin:8px 0}
   .urlbox code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     color:var(--muted);font-size:13px}
-  .urlbox button{background:var(--card2);color:#fff;border:1px solid var(--line);
+  .urlbox button{background:var(--card2);color:var(--text);border:1px solid var(--line);
     border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
   label.lbl{display:block;margin:20px 0 8px;font-size:17px}
   input[type=search],select{width:100%;background:var(--card);color:var(--text);
@@ -80,7 +100,21 @@
   .empty.show{display:block}
   .help h3{margin:0 0 8px}
   .help p{color:var(--muted);line-height:1.55;margin:0}
-  .help code{color:#bbf7d0;font-size:14px;word-break:break-all}
+  .help code{color:var(--code);font-size:14px;word-break:break-all}
+  .banner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:24px 0}
+  .banner h3{margin:0 0 8px}
+  .banner p{color:var(--muted);line-height:1.55;margin:0}
+  .modal{display:none;position:fixed;inset:0;background:var(--overlay);z-index:50;
+    align-items:flex-start;justify-content:center;padding:80px 20px 20px}
+  .modal.open{display:flex}
+  .modal-box{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:560px;padding:20px}
+  .modal-box input{margin-bottom:12px}
+  .sres a{display:flex;justify-content:space-between;gap:12px;color:var(--text);
+    padding:12px;border-radius:10px}
+  .sres a:hover{background:var(--card2)}
+  .sres .ssub{color:var(--muted);font-size:13px}
+  .hint{color:var(--muted);font-size:13px;margin:12px 0 0}
   footer{margin-top:48px;color:#6f6f7d;font-size:13px;line-height:1.6}
 </style>
 </head>
@@ -88,58 +122,50 @@
 <div class="top">
     <a class="brand" href="index.html">Redowansky</a>
     <div class="topbtns">
-      
-      <button class="iconbtn" aria-label="Menu" onclick="document.getElementById('menu').classList.toggle('open')">☰</button>
+      <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
+      <button class="iconbtn" id="menuBtn" aria-label="Menu" onclick="togglePanel()">☰</button>
     </div>
-    <div class="menu" id="menu"><a href="mihon.html">Mihon extensions</a><a href="aniyomi.html">Aniyomi extensions</a><a href="index.html#help">Troubleshooting</a></div>
+    <div class="panel" id="panel">
+      <a class="pitem" href="troubleshooting.html" onclick="closePanel()">Guide</a>
+      <a class="pitem" href="mihon.html" onclick="closePanel()">Mihon extensions</a>
+      <a class="pitem" href="aniyomi.html" onclick="closePanel()">Aniyomi extensions</a>
+      <div class="prow"><span>Appearance</span><button class="switch" id="themeSwitch" onclick="toggleTheme()">🌙</button></div>
+      <div class="psocial"><a href="https://github.com/Redowansky/spice-rack"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div>
+    </div>
+  </div><div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
+    <div class="modal-box">
+      <input type="search" id="globalQ" placeholder="Search extensions and guides..." oninput="globalSearch()">
+      <div class="sres" id="globalResults"></div>
+      <p class="hint">Esc to close</p>
+    </div>
   </div><div class="wrap">
     <div class="hero">
       <h1>Redowansky</h1>
       <p>Extension store for Mihon and Aniyomi.</p>
       <div class="pills">
-        <a class="btn btn-green" href="#apps">Get started</a>
-        <a class="btn btn-dark" href="#help">Need Help?</a>
+        <a class="btn btn-green" href="troubleshooting.html">Get started</a>
+        <a class="btn btn-dark" href="mailto:hi@redowansky.cyou">Need Help?</a>
       </div>
     </div>
 
     <div class="infogrid" id="apps">
       <div class="infocard">
-        <div class="ic">▶️</div>
+        <svg width="52" height="52" style="border-radius:12px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108.0 108.0"><path d="M14.5,7L86.5,7A7,7 0,0 1,93.5 14L93.5,95A7,7 0,0 1,86.5 102L14.5,102A7,7 0,0 1,7.5 95L7.5,14A7,7 0,0 1,14.5 7z" fill="#000000"/><path d="M14.5,7L86.5,7A7,7 0,0 1,93.5 14L93.5,95A7,7 0,0 1,86.5 102L14.5,102A7,7 0,0 1,7.5 95L7.5,14A7,7 0,0 1,14.5 7z" fill="#2e84bf"/><path d="M7.5,12.01C7.5,9.24 9.74,7 12.5,7L17.5,7L17.5,102L12.5,102C9.74,102 7.5,99.77 7.5,96.99L7.5,12.01Z" fill="#69a3cb"/><path d="M54,54m-25,0a25,25 0,1 1,50 0a25,25 0,1 1,-50 0" fill="#c92824"/><path d="M54,54m-20.051,0a20.051,20.051 0,1 1,40.102 0a20.051,20.051 0,1 1,-40.102 0" fill="#ffffff"/><path d="m63.998,52.877 l-15.133,-8.736c-0.904,-0.521 -2.032,0.131 -2.032,1.173v17.474c0,1.044 1.13,1.695 2.032,1.173L63.997,55.224c0.904,-0.521 0.904,-1.825 0.001,-2.347z" fill="#000000"/></svg>
         <h3>Aniyomi</h3>
         <p>Anime extensions for Aniyomi and forks.</p>
-        <p>Extensions · <span class="ver">Latest v16.1</span> · 1 extension</p>
+        <p>Extensions · <span class="ver">Latest v0.18.2.1</span> · 1 extension</p>
         <a class="go" href="aniyomi.html">Browse Aniyomi extensions →</a>
       </div><div class="infocard">
-        <div class="ic">📖</div>
+        <svg width="52" height="52" style="border-radius:12px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432.0 432.0"><defs><clipPath id="clip"><path d="M0,0h432v432h-432z"/></clipPath></defs><g clip-path="url(#clip)"><path d="M0,0h432v432h-432z" fill="#fafafa"/><path d="M322.13,215.5C322.13,272.66 274.64,319 216.07,319C157.49,319 110,272.66 110,215.5C110,158.34 157.49,112 216.07,112C274.64,112 322.13,158.34 322.13,215.5Z" fill="#f2faff"/><path d="M216.07,299.59C263.66,299.59 302.24,261.94 302.24,215.5C302.24,169.06 263.66,131.41 216.07,131.41C168.47,131.41 129.89,169.06 129.89,215.5C129.89,261.94 168.47,299.59 216.07,299.59ZM216.07,319C274.64,319 322.13,272.66 322.13,215.5C322.13,158.34 274.64,112 216.07,112C157.49,112 110,158.34 110,215.5C110,272.66 157.49,319 216.07,319Z" fill="#0058a0" fill-rule="evenodd"/></g><path d="M182.03,188.7L181.33,172.69C183.42,173.09 185.91,173.19 191.57,173.19C198.44,173.19 207.49,172.79 212.16,172.19C214.15,171.99 214.95,171.7 216.24,171L226.98,180.15C225.98,181.54 225.68,182.14 224.59,184.92C223.7,187.11 219.62,199.74 218.03,205.11C225.39,206.6 229.46,207.7 235.03,209.98C235.73,205.11 235.83,202.52 235.83,193.67C235.83,191.39 235.73,190.09 235.43,188.01L252.74,188.6C252.24,190.99 252.14,191.98 252.04,195.86C251.64,205.21 251.24,209.68 250.25,216.45C257.11,219.93 257.11,219.93 260.59,221.82C262.38,222.81 262.78,223.01 263.97,223.41L258.2,242.01C255.42,239.52 251.54,236.83 245.87,233.65C240.9,245.49 232.65,254.14 220.12,261C215.94,255.43 212.76,252.05 207.68,248.07C215.04,244.59 218.43,242.4 222.3,238.72C226.08,235.04 228.57,231.46 230.96,226.09C224.59,223.21 220.51,221.92 213.45,220.43C209.38,232.56 206.09,240.32 203.21,244.99C199.33,251.25 194.06,254.54 187.99,254.54C183.32,254.54 178.55,252.45 175.07,248.87C171.09,244.79 169,239.12 169,232.56C169,222.81 173.67,214.36 181.83,209.09C187.1,205.71 192.67,204.21 201.52,203.72C203.31,197.85 204.8,192.78 206.19,187.11C201.82,187.51 196.35,187.81 189.68,188.1C186.1,188.2 184.91,188.3 182.03,188.7ZM197.14,218.93C192.47,219.73 189.68,221.22 187.2,224.4C185.31,226.59 184.41,229.18 184.41,231.96C184.41,235.04 185.91,237.33 187.8,237.33C190.08,237.33 192.67,232.16 197.14,218.93Z" fill="#031019"/></svg>
         <h3>Mihon</h3>
         <p>Manga extensions for Mihon and variants.</p>
-        <p>Extensions · <span class="ver">Latest v1.6.12</span> · 1 extension</p>
+        <p>Extensions · <span class="ver">Latest v0.21.3</span> · 1 extension</p>
         <a class="go" href="mihon.html">Browse Mihon extensions →</a>
       </div><div class="infocard">
         <div class="ic">⚠️</div>
         <h3>Troubleshooting</h3>
         <p>Facing issues with extensions? Here's how to troubleshoot.</p>
-        <a class="go" href="#help">Get started →</a>
-      </div>
-    </div>
-
-    <h2 class="sec" id="help">Troubleshooting</h2>
-    <div class="infogrid help">
-      <div class="infocard">
-        <h3>⚠️ App says the extension is Untrusted?</h3>
-        <p>Normal for this store — the extensions are signed with our own key, not a public store key. Tap Trust to install.</p>
-      </div>
-      <div class="infocard">
-        <h3>⚠️ "Not associated with any store" banner?</h3>
-        <p>That shows on sideloaded APKs. Add the store first (buttons on the extensions page), then install the extension from inside the app — the banner goes away and updates work.</p>
-      </div>
-      <div class="infocard">
-        <h3>🔧 Add the store manually</h3>
-        <p>Mihon: More → Settings → Browse → Extension repos → paste the Mihon URL.<br>Aniyomi: More → Settings → Browse → Anime extension repos → paste the Aniyomi URL.</p>
-      </div>
-      <div class="infocard">
-        <h3>⚠️ Extension list says my app is outdated</h3>
-        <p>Update Mihon / Aniyomi itself from its official release first — store indexes need a recent app version to load.</p>
+        <a class="go" href="troubleshooting.html">Get started →</a>
       </div>
     </div>
 
@@ -148,5 +174,58 @@
       Not affiliated with Mihon, Aniyomi, or Keiyoushi — same kind of store page, our own extensions.
     </footer>
   </div>
+<script>
+const SEARCH_INDEX = [{"t":"NHentai.xxx","s":"Mihon extension \u00b7 v1.6.12","u":"mihon.html?q=NHentai"},{"t":"Redowansky's Library","s":"Aniyomi extension \u00b7 v16.1","u":"aniyomi.html?q=Redowansky"},{"t":"Adding the extension store","s":"Guide","u":"troubleshooting.html#adding"},{"t":"App says the extension is Untrusted?","s":"Guide","u":"troubleshooting.html#untrusted"},{"t":"Not associated with any store banner?","s":"Guide","u":"troubleshooting.html#banner"},{"t":"Add the store manually","s":"Guide","u":"troubleshooting.html#manual"},{"t":"Extension list says my app is outdated","s":"Guide","u":"troubleshooting.html#outdated"}];
+
+function togglePanel(){
+  const p = document.getElementById('panel');
+  const b = document.getElementById('menuBtn');
+  const open = p.classList.toggle('open');
+  if (b) b.textContent = open ? '✕' : '☰';
+}
+function closePanel(){
+  const p = document.getElementById('panel');
+  const b = document.getElementById('menuBtn');
+  if (p) p.classList.remove('open');
+  if (b) b.textContent = '☰';
+}
+function applyThemeIcon(){
+  const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const s = document.getElementById('themeSwitch');
+  if (s) s.textContent = dark ? '🌙' : '☀️';
+}
+function toggleTheme(){
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+  try { localStorage.setItem('rsp-theme', next); } catch (e) {}
+  applyThemeIcon();
+}
+function openSearch(){
+  const m = document.getElementById('searchModal');
+  m.classList.add('open');
+  const q = document.getElementById('globalQ');
+  q.value = ''; q.focus(); globalSearch();
+}
+function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+function globalSearch(){
+  const q = (document.getElementById('globalQ').value || '').trim().toLowerCase();
+  const box = document.getElementById('globalResults');
+  const hits = SEARCH_INDEX.filter(e => !q || (e.t + ' ' + e.s).toLowerCase().includes(q));
+  box.innerHTML = hits.length ? hits.map(e =>
+    '<a href="' + e.u + '"><span>' + e.t + '</span><span class="ssub">' + e.s + '</span></a>').join('')
+    : '<p class="hint">No matches. Try an extension name or a guide topic.</p>';
+}
+function copyUrl(id, btn){
+  const t = document.getElementById(id).textContent;
+  const done = () => { btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500); };
+  if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done, done); }
+  else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+}
+applyThemeIcon();
+
+
+</script>
 </body>
 </html>
