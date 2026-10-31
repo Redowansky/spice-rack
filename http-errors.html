@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redowansky — HTTP errors</title>
+<script>try{var t=localStorage.getItem('rsp-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+  :root{
+    --bg:#0e0e13; --card:#1a1a23; --card2:#22222e; --line:#2a2a38;
+    --text:#ffffff; --muted:#9a9aa8; --green:#3ddc84; --btn:#16a34a;
+    --btn2:#15803d; --red:#ff6b6b; --redbg:#3a1f26; --green2:#4ade80; --greenbg:#1c3226;
+    --code:#bbf7d0; --overlay:rgba(0,0,0,.6); --warnbg:#33270f; --warnline:#6b5310; --warn:#f5c542;
+  }
+  html[data-theme="light"]{
+    --bg:#f4f4f6; --card:#ffffff; --card2:#ececf1; --line:#dcdce2;
+    --text:#14141a; --muted:#5c5c66; --green:#15803d; --btn:#16a34a;
+    --btn2:#15803d; --red:#d92d20; --redbg:#ffe3e3; --green2:#15803d; --greenbg:#dcfce7;
+    --code:#15803d; --overlay:rgba(0,0,0,.4); --warnbg:#fef3c7; --warnline:#d97706; --warn:#92400e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif}
+  a{color:var(--green);text-decoration:none}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px 64px}
+  .top{display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px;max-width:1180px;margin:0 auto}
+  .brand{font-size:20px;font-weight:700;letter-spacing:.2px;color:var(--text)}
+  .topbtns{display:flex;gap:14px;align-items:center}
+  .iconbtn{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px;text-decoration:none}
+  .iconbtn svg{width:22px;height:22px;display:block}
+  .inline-nav{display:none;gap:22px}
+  .inline-nav a{color:var(--text);font-size:16px}
+  .inline-nav a:hover{color:var(--green)}
+  .topswitch{display:none}
+  .panel{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;
+    padding:18px 20px;overflow-y:auto}
+  .panel.open{display:block}
+  .panel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+  .panel a.pitem{display:block;color:var(--text);padding:14px 2px;border-bottom:1px solid var(--line);font-size:18px}
+  .panel .prow{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 2px;color:var(--text);border-bottom:1px solid var(--line);font-size:18px}
+  .panel .psocial{display:flex;gap:14px;padding:18px 2px}
+  .panel .psocial a{color:var(--text)}
+  .switch{position:relative;display:inline-block;width:52px;height:30px;flex-shrink:0}
+  .switch input{display:none}
+  .switch .slider{position:absolute;inset:0;background:var(--card2);border:1px solid var(--line);
+    border-radius:999px;cursor:pointer;transition:.2s}
+  .switch .slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;
+    background:#888;border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--btn)}
+  .switch input:checked + .slider:before{transform:translateX(22px);background:#fff}
+  .menubar{display:flex;align-items:center;justify-content:space-between;
+    max-width:1180px;margin:0 auto;padding:10px 20px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--bg);z-index:5}
+  .menubar button{background:none;border:0;color:var(--text);font-size:16px;cursor:pointer;padding:6px 2px}
+  .layout{display:block}
+  .drawer{position:fixed;left:0;top:0;bottom:0;width:min(320px,85vw);background:var(--bg);
+    border-right:1px solid var(--line);z-index:40;overflow-y:auto;padding:18px 20px;
+    transform:translateX(-105%);transition:transform .2s}
+  .drawer.open{transform:translateX(0)}
+  .dclose{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px;margin-bottom:12px}
+  .dsec{margin-bottom:18px}
+  .dsec-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;
+    font-size:17px;padding:8px 2px;cursor:pointer}
+  .dsec.collapsed .dsec-b{display:none}
+  .ditem{display:block;color:var(--muted);padding:8px 2px 8px 14px;font-size:16px}
+  .ditem:hover{color:var(--green)}
+  .ditem.sub{padding-left:28px}
+  .backdrop{position:fixed;inset:0;background:var(--overlay);z-index:30;display:none}
+  .backdrop.show{display:block}
+  .content{min-width:0}
+  .hero{padding:34px 0 8px}
+  .hero h1{margin:0;font-size:52px;line-height:1.05;color:var(--green);letter-spacing:-.5px}
+  .hero p{margin:14px 0 22px;color:var(--muted);font-size:19px}
+  .pills{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;border:0;cursor:pointer;font-size:16px;font-weight:600;
+    padding:13px 24px;border-radius:999px;text-align:center}
+  .btn-green{background:var(--btn);color:#fff}
+  .btn-green:hover{background:var(--btn2)}
+  .btn-green.disabled{opacity:.45;pointer-events:none}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--green)}
+  .infogrid{display:grid;grid-template-columns:1fr;gap:16px;margin:30px 0 8px}
+  @media(min-width:640px){.infogrid{grid-template-columns:1fr 1fr}}
+  .infocard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .infocard .ic{font-size:26px}
+  .infocard h3{margin:14px 0 8px;font-size:19px}
+  .infocard p{margin:0 0 14px;color:var(--muted);line-height:1.5}
+  .infocard .go{font-weight:600}
+  .infocard a.cardlink{color:inherit;display:block}
+  h2.sec{font-size:32px;margin:40px 0 4px}
+  h3.sub{font-size:22px;margin:32px 0 4px}
+  .note{color:var(--muted);font-size:15px;line-height:1.5;margin:8px 0 20px}
+  .guide p{color:var(--muted);line-height:1.6}
+  .codeblock{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;overflow-x:auto;margin:10px 0}
+  .codeblock code{color:var(--code);font-size:13px;word-break:break-all}
+  .osnotice{display:none;background:var(--warnbg);border:1px solid var(--warnline);color:var(--warn);
+    border-radius:12px;padding:14px 16px;margin:16px 0;line-height:1.5}
+  .osnotice.show{display:block}
+  label.lbl{display:block;margin:20px 0 8px;font-size:17px}
+  input[type=search],select{width:100%;background:var(--card);color:var(--text);
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-size:16px;outline:none}
+  input[type=search]::placeholder{color:#6f6f7d}
+  input[type=search]:focus,select:focus{border-color:var(--green)}
+  .radios{display:flex;gap:18px;flex-wrap:wrap}
+  .radios label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px}
+  .radios input{accent-color:var(--green);width:18px;height:18px}
+  hr.sep{border:0;border-top:1px solid var(--line);margin:34px 0 20px}
+  .counts{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  .counts .all{font-size:30px;font-weight:800}
+  .counts .src{font-size:30px;font-weight:800;color:var(--green)}
+  .counts .ext{color:var(--muted);font-size:17px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px;display:flex;align-items:center;gap:14px}
+  .card img{width:52px;height:52px;border-radius:12px;flex-shrink:0}
+  .card .meta{flex:1;min-width:0}
+  .card .name{font-size:19px;font-weight:700}
+  .card .sub{color:var(--muted);font-size:14px;margin-top:2px}
+  .badge{font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;white-space:nowrap}
+  .badge.nsfw{background:var(--redbg);color:var(--red)}
+  .badge.safe{background:var(--greenbg);color:var(--green2)}
+  .dl{font-size:26px;color:var(--green);padding:6px;text-decoration:none}
+  .empty{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px;text-align:center;color:var(--muted);margin-top:18px}
+  .empty.show{display:block}
+  .banner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:24px 0}
+  .banner h3{margin:0 0 8px}
+  .banner p{color:var(--muted);line-height:1.55;margin:0}
+  .onpage a{display:block;padding:8px 2px}
+  .pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;flex-wrap:wrap}
+  .pager a{font-weight:600}
+  .pager .dim{color:var(--muted);font-weight:400}
+  .modal{display:none;position:fixed;inset:0;background:var(--overlay);z-index:60;
+    align-items:flex-start;justify-content:center;padding:80px 20px 20px}
+  .modal.open{display:flex}
+  .modal-box{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:560px;padding:20px}
+  .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:18px}
+  .modal-top button{background:none;border:0;color:var(--text);font-size:20px;cursor:pointer}
+  .modal-box input{margin-bottom:12px}
+  .sres a{display:block;color:var(--text);padding:12px;border-radius:10px}
+  .sres a:hover,.sres a.sel{background:var(--card2)}
+  .hint{color:var(--muted);font-size:13px;margin:12px 0 0}
+  @media(min-width:768px){
+    .hamburger{display:none}
+    .inline-nav{display:flex}
+    .topswitch{display:inline-block}
+    .menubar{display:none}
+    .layout{display:flex;align-items:flex-start;max-width:1180px;margin:0 auto}
+    .drawer{position:sticky;top:0;transform:none;width:250px;flex-shrink:0;
+      height:100vh;border-right:1px solid var(--line)}
+    .drawer .dclose{display:none}
+    .content{flex:1}
+  }
+</style>
+</head>
+<body>
+<div class="top">
+    <a class="brand" href="index.html">Redowansky</a>
+    <nav class="inline-nav">
+      <a href="getting-started.html">Guide</a>
+      <a href="mihon.html">Mihon extensions</a>
+      <a href="aniyomi.html">Aniyomi extensions</a>
+    </nav>
+    <div class="topbtns">
+      <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
+      <label class="switch topswitch"><input type="checkbox" class="themeSwitch" onchange="onThemeSwitch(this)"><span class="slider"></span></label>
+      <a class="iconbtn" href="https://github.com/Redowansky/spice-rack"><svg viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a>
+      <button class="iconbtn hamburger" aria-label="Menu" onclick="openPanel()">☰</button>
+    </div>
+  </div>
+  <div class="panel" id="panel">
+    <div class="panel-top">
+      <a class="brand" href="index.html">Redowansky</a>
+      <div class="topbtns">
+        <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
+        <button class="iconbtn" aria-label="Close menu" onclick="closePanel()">✕</button>
+      </div>
+    </div>
+    <a class="pitem" href="getting-started.html" onclick="closePanel()">Guide</a>
+    <a class="pitem" href="mihon.html" onclick="closePanel()">Mihon extensions</a>
+    <a class="pitem" href="aniyomi.html" onclick="closePanel()">Aniyomi extensions</a>
+    <div class="prow"><span>Appearance</span><label class="switch"><input type="checkbox" class="themeSwitch" onchange="onThemeSwitch(this)"><span class="slider"></span></label></div>
+    <div class="psocial"><a href="https://github.com/Redowansky/spice-rack"><svg viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div>
+  </div><div class="menubar"><button onclick="openDrawer()">☰ Menu</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">Return to top ↑</button></div><div class="layout"><div class="drawer" id="drawer">
+    <button class="dclose" aria-label="Close menu" onclick="closeDrawer()">✕</button>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Extensions <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="mihon.html">Mihon extensions</a>
+        <a class="ditem" href="aniyomi.html">Aniyomi extensions</a>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Frequently asked questions <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="faq-general.html">General</a>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Guides <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="getting-started.html">Getting started</a>
+        <a class="ditem" href="troubleshooting.html">Troubleshooting</a>
+        <a class="ditem sub" href="http-errors.html">HTTP errors</a>
+      </div>
+    </div>
+  </div>
+  <div class="backdrop" id="backdrop" onclick="closeDrawer()"></div><div class="content"><div class="wrap guide"><div class="hero"><h1>HTTP errors</h1><p>Encountering HTTP errors? Here's what they mean and how to address them.</p></div><div class="onpage"><a href="#e403">403: Forbidden</a><a href="#e404">404: Not Found</a><a href="#e429">429: Too Many Requests</a><a href="#e5xx">5xx: Server Errors</a><a href="#edenied">1006, 1007, 1008, 1106: Access Denied</a><a href="#e1020">1020: Access Denied</a></div><h2 class="sec" id="e403">403: Forbidden</h2><p>The source is protected or has banned your IP. Open the source in WebView to confirm it loads there.</p><h2 class="sec" id="e404">404: Not Found</h2><p>The source is down or the series was removed. Verify in WebView, then consider switching sources.</p><h2 class="sec" id="e429">429: Too Many Requests</h2><p>The source temporarily banned your IP after too many fast downloads or reads. Wait a while before retrying.</p><h2 class="sec" id="e5xx">5xx: Server Errors</h2><p>Something is wrong on the source's own server, for example 500 or 502. Check the source in WebView and retry later.</p><h2 class="sec" id="edenied">1006, 1007, 1008, 1106: Access Denied</h2><p>A temporary IP ban by the source. Wait it out, then retry.</p><h2 class="sec" id="e1020">1020: Access Denied</h2><p>You tripped a firewall rule set by the site owner, who may have raised protection. Try again later or use another source.</p><div class="pager"><a href="troubleshooting.html">← Previous page Troubleshooting</a><span class="dim"></span></div></div></div></div><div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
+    <div class="modal-box">
+      <div class="modal-top"><span>Search</span><button aria-label="Close search" onclick="closeSearch()">✕</button></div>
+      <input type="search" id="globalQ" placeholder="Search" oninput="globalSearch()">
+      <div class="sres" id="globalResults"></div>
+      <p class="hint">↑↓ to navigate, ↵ to select, esc to close</p>
+    </div>
+  </div>
+<script>
+const SEARCH_INDEX = [{"s":"Mihon extensions","u":"mihon.html"},{"s":"Aniyomi extensions","u":"aniyomi.html"},{"s":"Getting started","u":"getting-started.html"},{"s":"Getting started > Adding the extension store","u":"getting-started.html#adding"},{"s":"Getting started > Before you start","u":"getting-started.html#before-you-start"},{"s":"Getting started > Adding the store","u":"getting-started.html#adding-the-store"},{"s":"Getting started > Adding the store manually","u":"getting-started.html#adding-manually"},{"s":"Getting started > Reinstall the extensions","u":"getting-started.html#reinstall"},{"s":"Getting started > Additional setup","u":"getting-started.html#additional-setup"},{"s":"Getting started > Trouble finding a specific series?","u":"getting-started.html#trouble-finding"},{"s":"Troubleshooting","u":"troubleshooting.html"},{"s":"Troubleshooting > Extension installation issues","u":"troubleshooting.html#install-issues"},{"s":"Troubleshooting > WebView","u":"troubleshooting.html#webview"},{"s":"Troubleshooting > Accessing websites via WebView","u":"troubleshooting.html#webview-access"},{"s":"Troubleshooting > Clearing cookies and WebView data","u":"troubleshooting.html#clear-data"},{"s":"Troubleshooting > WebView update","u":"troubleshooting.html#webview-update"},{"s":"Troubleshooting > Cloudflare","u":"troubleshooting.html#cloudflare"},{"s":"Troubleshooting > Dealing with Cloudflare looping","u":"troubleshooting.html#cloudflare-looping"},{"s":"Troubleshooting > Changing your user agent","u":"troubleshooting.html#user-agent"},{"s":"HTTP errors","u":"http-errors.html"},{"s":"HTTP errors > 403: Forbidden","u":"http-errors.html#e403"},{"s":"HTTP errors > 404: Not Found","u":"http-errors.html#e404"},{"s":"HTTP errors > 429: Too Many Requests","u":"http-errors.html#e429"},{"s":"HTTP errors > 5xx: Server Errors","u":"http-errors.html#e5xx"},{"s":"HTTP errors > Access Denied","u":"http-errors.html#edenied"},{"s":"HTTP errors > 1020: Access Denied","u":"http-errors.html#e1020"},{"s":"General","u":"faq-general.html"},{"s":"General > Will the extensions be maintained?","u":"faq-general.html#maintained"},{"s":"General > Who is maintaining these extensions?","u":"faq-general.html#who-maintains"}];
+
+function openPanel(){document.getElementById('panel').classList.add('open');}
+function closePanel(){document.getElementById('panel').classList.remove('open');}
+function openDrawer(){var d=document.getElementById('drawer');if(!d)return;d.classList.add('open');var b=document.getElementById('backdrop');if(b&&window.innerWidth<768)b.classList.add('show');}
+function closeDrawer(){var d=document.getElementById('drawer');if(d)d.classList.remove('open');var b=document.getElementById('backdrop');if(b)b.classList.remove('show');}
+function toggleSec(h){var s=h.parentElement;s.classList.toggle('collapsed');var sp=h.querySelector('span');if(sp)sp.textContent=s.classList.contains('collapsed')?'\u25b8':'\u25be';}
+function setTheme(mode){if(mode==='light'){document.documentElement.setAttribute('data-theme','light');}else{document.documentElement.removeAttribute('data-theme');}try{localStorage.setItem('rsp-theme',mode);}catch(e){}document.querySelectorAll('.themeSwitch').forEach(function(c){c.checked=(mode!=='light');});}
+function onThemeSwitch(cb){setTheme(cb.checked?'dark':'light');}
+function openSearch(){closePanel();var m=document.getElementById('searchModal');m.classList.add('open');var q=document.getElementById('globalQ');q.value='';selIdx=-1;globalSearch();q.focus();}
+function closeSearch(){document.getElementById('searchModal').classList.remove('open');}
+var selIdx=-1;
+function paintSel(links){links.forEach(function(a,i){a.classList.toggle('sel',i===selIdx);});}
+function globalSearch(){var q=(document.getElementById('globalQ').value||'').trim().toLowerCase();var box=document.getElementById('globalResults');var hits=SEARCH_INDEX.filter(function(e){return !q||(e.s).toLowerCase().indexOf(q)>=0;});selIdx=-1;box.innerHTML=hits.length?hits.map(function(e){return '<a href="'+e.u+'"><span># '+e.s+'</span></a>';}).join(''):'<p class="hint">No results found.</p>';}
+document.addEventListener('keydown',function(e){var m=document.getElementById('searchModal');if(!m||!m.classList.contains('open'))return;if(e.key==='Escape'){closeSearch();return;}var links=document.querySelectorAll('#globalResults a');if(e.key==='ArrowDown'){e.preventDefault();if(links.length){selIdx=(selIdx+1)%links.length;paintSel(links);}}else if(e.key==='ArrowUp'){e.preventDefault();if(links.length){selIdx=(selIdx-1+links.length)%links.length;paintSel(links);}}else if(e.key==='Enter'){if(selIdx>=0&&links[selIdx]){window.location.href=links[selIdx].getAttribute('href');}}});
+(function(){var t='dark';try{t=localStorage.getItem('rsp-theme')||'dark';}catch(e){}setTheme(t);})();
+
+
+</script>
+</body>
+</html>

@@ -10,13 +10,13 @@
     --bg:#0e0e13; --card:#1a1a23; --card2:#22222e; --line:#2a2a38;
     --text:#ffffff; --muted:#9a9aa8; --green:#3ddc84; --btn:#16a34a;
     --btn2:#15803d; --red:#ff6b6b; --redbg:#3a1f26; --green2:#4ade80; --greenbg:#1c3226;
-    --code:#bbf7d0; --overlay:rgba(0,0,0,.6);
+    --code:#bbf7d0; --overlay:rgba(0,0,0,.6); --warnbg:#33270f; --warnline:#6b5310; --warn:#f5c542;
   }
   html[data-theme="light"]{
     --bg:#f4f4f6; --card:#ffffff; --card2:#ececf1; --line:#dcdce2;
     --text:#14141a; --muted:#5c5c66; --green:#15803d; --btn:#16a34a;
     --btn2:#15803d; --red:#d92d20; --redbg:#ffe3e3; --green2:#15803d; --greenbg:#dcfce7;
-    --code:#15803d; --overlay:rgba(0,0,0,.4);
+    --code:#15803d; --overlay:rgba(0,0,0,.4); --warnbg:#fef3c7; --warnline:#d97706; --warn:#92400e;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
@@ -24,35 +24,61 @@
   a{color:var(--green);text-decoration:none}
   .wrap{max-width:960px;margin:0 auto;padding:0 20px 64px}
   .top{display:flex;align-items:center;justify-content:space-between;
-    padding:18px 20px;max-width:960px;margin:0 auto;position:relative}
+    padding:18px 20px;max-width:1180px;margin:0 auto}
   .brand{font-size:20px;font-weight:700;letter-spacing:.2px;color:var(--text)}
   .topbtns{display:flex;gap:14px;align-items:center}
-  .iconbtn{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px}
-  .panel{position:absolute;right:20px;top:58px;background:var(--card2);border:1px solid var(--line);
-    border-radius:12px;padding:8px;min-width:230px;display:none;z-index:10}
+  .iconbtn{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px;text-decoration:none}
+  .iconbtn svg{width:22px;height:22px;display:block}
+  .inline-nav{display:none;gap:22px}
+  .inline-nav a{color:var(--text);font-size:16px}
+  .inline-nav a:hover{color:var(--green)}
+  .topswitch{display:none}
+  .panel{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;
+    padding:18px 20px;overflow-y:auto}
   .panel.open{display:block}
-  .panel a.pitem{display:block;color:var(--text);padding:12px;border-radius:8px;border-bottom:1px solid var(--line)}
-  .panel a.pitem:last-of-type{border-bottom:0}
-  .panel a.pitem:hover{background:var(--card)}
+  .panel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+  .panel a.pitem{display:block;color:var(--text);padding:14px 2px;border-bottom:1px solid var(--line);font-size:18px}
   .panel .prow{display:flex;align-items:center;justify-content:space-between;
-    padding:12px;color:var(--text);border-bottom:1px solid var(--line)}
-  .panel .psocial{display:flex;gap:14px;padding:12px 12px 6px}
+    padding:14px 2px;color:var(--text);border-bottom:1px solid var(--line);font-size:18px}
+  .panel .psocial{display:flex;gap:14px;padding:18px 2px}
   .panel .psocial a{color:var(--text)}
-  .switch{background:var(--card);color:var(--text);border:1px solid var(--line);
-    border-radius:999px;padding:6px 12px;cursor:pointer;font-size:16px}
+  .switch{position:relative;display:inline-block;width:52px;height:30px;flex-shrink:0}
+  .switch input{display:none}
+  .switch .slider{position:absolute;inset:0;background:var(--card2);border:1px solid var(--line);
+    border-radius:999px;cursor:pointer;transition:.2s}
+  .switch .slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;
+    background:#888;border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--btn)}
+  .switch input:checked + .slider:before{transform:translateX(22px);background:#fff}
   .menubar{display:flex;align-items:center;justify-content:space-between;
-    max-width:960px;margin:0 auto;padding:10px 20px;border-bottom:1px solid var(--line);
+    max-width:1180px;margin:0 auto;padding:10px 20px;border-bottom:1px solid var(--line);
     position:sticky;top:0;background:var(--bg);z-index:5}
   .menubar button{background:none;border:0;color:var(--text);font-size:16px;cursor:pointer;padding:6px 2px}
+  .layout{display:block}
+  .drawer{position:fixed;left:0;top:0;bottom:0;width:min(320px,85vw);background:var(--bg);
+    border-right:1px solid var(--line);z-index:40;overflow-y:auto;padding:18px 20px;
+    transform:translateX(-105%);transition:transform .2s}
+  .drawer.open{transform:translateX(0)}
+  .dclose{background:none;border:0;color:var(--text);font-size:22px;cursor:pointer;padding:6px;margin-bottom:12px}
+  .dsec{margin-bottom:18px}
+  .dsec-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;
+    font-size:17px;padding:8px 2px;cursor:pointer}
+  .dsec.collapsed .dsec-b{display:none}
+  .ditem{display:block;color:var(--muted);padding:8px 2px 8px 14px;font-size:16px}
+  .ditem:hover{color:var(--green)}
+  .ditem.sub{padding-left:28px}
+  .backdrop{position:fixed;inset:0;background:var(--overlay);z-index:30;display:none}
+  .backdrop.show{display:block}
+  .content{min-width:0}
   .hero{padding:34px 0 8px}
-  .hero h1{margin:0;font-size:56px;line-height:1.05;color:var(--green);letter-spacing:-.5px}
+  .hero h1{margin:0;font-size:52px;line-height:1.05;color:var(--green);letter-spacing:-.5px}
   .hero p{margin:14px 0 22px;color:var(--muted);font-size:19px}
   .pills{display:flex;gap:12px;flex-wrap:wrap}
   .btn{display:inline-block;border:0;cursor:pointer;font-size:16px;font-weight:600;
     padding:13px 24px;border-radius:999px;text-align:center}
   .btn-green{background:var(--btn);color:#fff}
   .btn-green:hover{background:var(--btn2)}
-  .btn-dark{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn-green.disabled{opacity:.45;pointer-events:none}
   .btn-outline{background:transparent;color:var(--text);border:1px solid var(--green)}
   .infogrid{display:grid;grid-template-columns:1fr;gap:16px;margin:30px 0 8px}
   @media(min-width:640px){.infogrid{grid-template-columns:1fr 1fr}}
@@ -61,16 +87,17 @@
   .infocard h3{margin:14px 0 8px;font-size:19px}
   .infocard p{margin:0 0 14px;color:var(--muted);line-height:1.5}
   .infocard .go{font-weight:600}
-  .infocard .ver{color:var(--green);font-weight:700}
-  h2.sec{font-size:36px;margin:40px 0 4px}
+  .infocard a.cardlink{color:inherit;display:block}
+  h2.sec{font-size:32px;margin:40px 0 4px}
   h3.sub{font-size:22px;margin:32px 0 4px}
   .note{color:var(--muted);font-size:15px;line-height:1.5;margin:8px 0 20px}
-  .urlbox{background:var(--card);border:1px solid var(--line);border-radius:10px;
-    padding:10px 12px;display:flex;gap:10px;align-items:center;margin:8px 0}
-  .urlbox code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    color:var(--muted);font-size:13px}
-  .urlbox button{background:var(--card2);color:var(--text);border:1px solid var(--line);
-    border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+  .guide p{color:var(--muted);line-height:1.6}
+  .codeblock{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;overflow-x:auto;margin:10px 0}
+  .codeblock code{color:var(--code);font-size:13px;word-break:break-all}
+  .osnotice{display:none;background:var(--warnbg);border:1px solid var(--warnline);color:var(--warn);
+    border-radius:12px;padding:14px 16px;margin:16px 0;line-height:1.5}
+  .osnotice.show{display:block}
   label.lbl{display:block;margin:20px 0 8px;font-size:17px}
   input[type=search],select{width:100%;background:var(--card);color:var(--text);
     border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-size:16px;outline:none}
@@ -98,59 +125,90 @@
   .empty{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;
     padding:28px;text-align:center;color:var(--muted);margin-top:18px}
   .empty.show{display:block}
-  .help h3{margin:0 0 8px}
-  .help p{color:var(--muted);line-height:1.55;margin:0}
-  .help code{color:var(--code);font-size:14px;word-break:break-all}
   .banner{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:24px 0}
   .banner h3{margin:0 0 8px}
   .banner p{color:var(--muted);line-height:1.55;margin:0}
-  .modal{display:none;position:fixed;inset:0;background:var(--overlay);z-index:50;
+  .onpage a{display:block;padding:8px 2px}
+  .pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;flex-wrap:wrap}
+  .pager a{font-weight:600}
+  .pager .dim{color:var(--muted);font-weight:400}
+  .modal{display:none;position:fixed;inset:0;background:var(--overlay);z-index:60;
     align-items:flex-start;justify-content:center;padding:80px 20px 20px}
   .modal.open{display:flex}
   .modal-box{background:var(--card);border:1px solid var(--line);border-radius:16px;
     width:100%;max-width:560px;padding:20px}
+  .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:18px}
+  .modal-top button{background:none;border:0;color:var(--text);font-size:20px;cursor:pointer}
   .modal-box input{margin-bottom:12px}
-  .sres a{display:flex;justify-content:space-between;gap:12px;color:var(--text);
-    padding:12px;border-radius:10px}
-  .sres a:hover{background:var(--card2)}
-  .sres .ssub{color:var(--muted);font-size:13px}
+  .sres a{display:block;color:var(--text);padding:12px;border-radius:10px}
+  .sres a:hover,.sres a.sel{background:var(--card2)}
   .hint{color:var(--muted);font-size:13px;margin:12px 0 0}
-  footer{margin-top:48px;color:#6f6f7d;font-size:13px;line-height:1.6}
+  @media(min-width:768px){
+    .hamburger{display:none}
+    .inline-nav{display:flex}
+    .topswitch{display:inline-block}
+    .menubar{display:none}
+    .layout{display:flex;align-items:flex-start;max-width:1180px;margin:0 auto}
+    .drawer{position:sticky;top:0;transform:none;width:250px;flex-shrink:0;
+      height:100vh;border-right:1px solid var(--line)}
+    .drawer .dclose{display:none}
+    .content{flex:1}
+  }
 </style>
 </head>
 <body>
 <div class="top">
     <a class="brand" href="index.html">Redowansky</a>
+    <nav class="inline-nav">
+      <a href="getting-started.html">Guide</a>
+      <a href="mihon.html">Mihon extensions</a>
+      <a href="aniyomi.html">Aniyomi extensions</a>
+    </nav>
     <div class="topbtns">
       <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
-      <button class="iconbtn" id="menuBtn" aria-label="Menu" onclick="togglePanel()">☰</button>
+      <label class="switch topswitch"><input type="checkbox" class="themeSwitch" onchange="onThemeSwitch(this)"><span class="slider"></span></label>
+      <a class="iconbtn" href="https://github.com/Redowansky/spice-rack"><svg viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a>
+      <button class="iconbtn hamburger" aria-label="Menu" onclick="openPanel()">☰</button>
     </div>
-    <div class="panel" id="panel">
-      <a class="pitem" href="troubleshooting.html" onclick="closePanel()">Guide</a>
-      <a class="pitem" href="mihon.html" onclick="closePanel()">Mihon extensions</a>
-      <a class="pitem" href="aniyomi.html" onclick="closePanel()">Aniyomi extensions</a>
-      <div class="prow"><span>Appearance</span><button class="switch" id="themeSwitch" onclick="toggleTheme()">🌙</button></div>
-      <div class="psocial"><a href="https://github.com/Redowansky/spice-rack"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div>
-    </div>
-  </div><div class="menubar"><button onclick="togglePanel()">☰ Menu</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">Return to top ↑</button></div><div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
-    <div class="modal-box">
-      <input type="search" id="globalQ" placeholder="Search extensions and guides..." oninput="globalSearch()">
-      <div class="sres" id="globalResults"></div>
-      <p class="hint">Esc to close</p>
-    </div>
-  </div><div class="wrap">
-    <div class="hero">
-      <h1>Mihon Extensions</h1>
-      <p>Manga extensions for Mihon and variants.</p>
-      <div class="pills">
-        <a class="btn btn-green" href="mihon://extension-store?url=https%3A%2F%2Fraw.githubusercontent.com%2FRedowansky%2Fspice-rack%2Frepo%2Findex.pb">Add store to Mihon</a>
-        <a class="btn btn-dark" href="index.html">← Back to store</a>
+  </div>
+  <div class="panel" id="panel">
+    <div class="panel-top">
+      <a class="brand" href="index.html">Redowansky</a>
+      <div class="topbtns">
+        <button class="iconbtn" aria-label="Search" onclick="openSearch()">🔍</button>
+        <button class="iconbtn" aria-label="Close menu" onclick="closePanel()">✕</button>
       </div>
     </div>
-    <p class="note">Requires Mihon 0.21.3 or newer.</p>
-    <p class="note">On your phone, tapping the button opens the app with the store ready to add. On desktop, copy the store URL instead:</p>
-    <div class="urlbox"><code id="urlS">https://raw.githubusercontent.com/Redowansky/spice-rack/repo/index.pb</code><button onclick="copyUrl('urlS',this)">Copy</button></div>
-
+    <a class="pitem" href="getting-started.html" onclick="closePanel()">Guide</a>
+    <a class="pitem" href="mihon.html" onclick="closePanel()">Mihon extensions</a>
+    <a class="pitem" href="aniyomi.html" onclick="closePanel()">Aniyomi extensions</a>
+    <div class="prow"><span>Appearance</span><label class="switch"><input type="checkbox" class="themeSwitch" onchange="onThemeSwitch(this)"><span class="slider"></span></label></div>
+    <div class="psocial"><a href="https://github.com/Redowansky/spice-rack"><svg viewBox="0 0 24 24" fill="currentColor" aria-label="Project GitHub"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div>
+  </div><div class="menubar"><button onclick="openDrawer()">☰ Menu</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">Return to top ↑</button></div><div class="layout"><div class="drawer" id="drawer">
+    <button class="dclose" aria-label="Close menu" onclick="closeDrawer()">✕</button>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Extensions <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="mihon.html">Mihon extensions</a>
+        <a class="ditem" href="aniyomi.html">Aniyomi extensions</a>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Frequently asked questions <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="faq-general.html">General</a>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-h" onclick="toggleSec(this)">Guides <span>▾</span></div>
+      <div class="dsec-b">
+        <a class="ditem" href="getting-started.html">Getting started</a>
+        <a class="ditem" href="troubleshooting.html">Troubleshooting</a>
+        <a class="ditem sub" href="http-errors.html">HTTP errors</a>
+      </div>
+    </div>
+  </div>
+  <div class="backdrop" id="backdrop" onclick="closeDrawer()"></div><div class="content"><div class="wrap"><div class="hero"><h1>Mihon Extensions</h1><p>Manga extensions for Mihon and variants.</p><div class="pills"><a class="btn btn-green" id="addBtn" href="mihon://extension-store?url=https%3A%2F%2Fraw.githubusercontent.com%2FRedowansky%2Fspice-rack%2Frepo%2Findex.pb">Add store to Mihon</a></div></div><div class="osnotice" id="osNotice">Unsupported operating system — Mihon is an Android app only. Use an Android device with Mihon installed to add this store.</div><p class="note">Requires Mihon 0.21.3 or newer.</p>
     <label class="lbl" for="q">Search:</label>
     <input type="search" id="q" placeholder="Search sources by name, ID or URL..." oninput="render()">
 
@@ -185,92 +243,63 @@
 
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty">No extensions match your filters. Try clearing the search or choosing All content.</div>
-
-    <footer>
-      <a href="index.html">← Back to store</a> · <a href="aniyomi.html">Aniyomi extensions</a> · Redowansky's extension store · github.com/Redowansky/spice-rack
-    </footer>
+</div></div></div><div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
+    <div class="modal-box">
+      <div class="modal-top"><span>Search</span><button aria-label="Close search" onclick="closeSearch()">✕</button></div>
+      <input type="search" id="globalQ" placeholder="Search" oninput="globalSearch()">
+      <div class="sres" id="globalResults"></div>
+      <p class="hint">↑↓ to navigate, ↵ to select, esc to close</p>
+    </div>
   </div>
 <script>
-const SEARCH_INDEX = [{"t":"NHentai.xxx","s":"Mihon extension \u00b7 v1.6.12","u":"mihon.html?q=NHentai"},{"t":"Redowansky's Library","s":"Aniyomi extension \u00b7 v16.1","u":"aniyomi.html?q=Redowansky"},{"t":"Adding the extension store","s":"Guide","u":"troubleshooting.html#adding"},{"t":"App says the extension is Untrusted?","s":"Guide","u":"troubleshooting.html#untrusted"},{"t":"Not associated with any store banner?","s":"Guide","u":"troubleshooting.html#banner"},{"t":"Add the store manually","s":"Guide","u":"troubleshooting.html#manual"},{"t":"Extension list says my app is outdated","s":"Guide","u":"troubleshooting.html#outdated"}];
+const SEARCH_INDEX = [{"s":"Mihon extensions","u":"mihon.html"},{"s":"Aniyomi extensions","u":"aniyomi.html"},{"s":"Getting started","u":"getting-started.html"},{"s":"Getting started > Adding the extension store","u":"getting-started.html#adding"},{"s":"Getting started > Before you start","u":"getting-started.html#before-you-start"},{"s":"Getting started > Adding the store","u":"getting-started.html#adding-the-store"},{"s":"Getting started > Adding the store manually","u":"getting-started.html#adding-manually"},{"s":"Getting started > Reinstall the extensions","u":"getting-started.html#reinstall"},{"s":"Getting started > Additional setup","u":"getting-started.html#additional-setup"},{"s":"Getting started > Trouble finding a specific series?","u":"getting-started.html#trouble-finding"},{"s":"Troubleshooting","u":"troubleshooting.html"},{"s":"Troubleshooting > Extension installation issues","u":"troubleshooting.html#install-issues"},{"s":"Troubleshooting > WebView","u":"troubleshooting.html#webview"},{"s":"Troubleshooting > Accessing websites via WebView","u":"troubleshooting.html#webview-access"},{"s":"Troubleshooting > Clearing cookies and WebView data","u":"troubleshooting.html#clear-data"},{"s":"Troubleshooting > WebView update","u":"troubleshooting.html#webview-update"},{"s":"Troubleshooting > Cloudflare","u":"troubleshooting.html#cloudflare"},{"s":"Troubleshooting > Dealing with Cloudflare looping","u":"troubleshooting.html#cloudflare-looping"},{"s":"Troubleshooting > Changing your user agent","u":"troubleshooting.html#user-agent"},{"s":"HTTP errors","u":"http-errors.html"},{"s":"HTTP errors > 403: Forbidden","u":"http-errors.html#e403"},{"s":"HTTP errors > 404: Not Found","u":"http-errors.html#e404"},{"s":"HTTP errors > 429: Too Many Requests","u":"http-errors.html#e429"},{"s":"HTTP errors > 5xx: Server Errors","u":"http-errors.html#e5xx"},{"s":"HTTP errors > Access Denied","u":"http-errors.html#edenied"},{"s":"HTTP errors > 1020: Access Denied","u":"http-errors.html#e1020"},{"s":"General","u":"faq-general.html"},{"s":"General > Will the extensions be maintained?","u":"faq-general.html#maintained"},{"s":"General > Who is maintaining these extensions?","u":"faq-general.html#who-maintains"}];
 
-function togglePanel(){
-  const p = document.getElementById('panel');
-  const b = document.getElementById('menuBtn');
-  const open = p.classList.toggle('open');
-  if (b) b.textContent = open ? '✕' : '☰';
-}
-function closePanel(){
-  const p = document.getElementById('panel');
-  const b = document.getElementById('menuBtn');
-  if (p) p.classList.remove('open');
-  if (b) b.textContent = '☰';
-}
-function applyThemeIcon(){
-  const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const s = document.getElementById('themeSwitch');
-  if (s) s.textContent = dark ? '🌙' : '☀️';
-}
-function toggleTheme(){
-  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-  if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
-  else document.documentElement.removeAttribute('data-theme');
-  try { localStorage.setItem('rsp-theme', next); } catch (e) {}
-  applyThemeIcon();
-}
-function openSearch(){
-  const m = document.getElementById('searchModal');
-  m.classList.add('open');
-  const q = document.getElementById('globalQ');
-  q.value = ''; q.focus(); globalSearch();
-}
-function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
-function globalSearch(){
-  const q = (document.getElementById('globalQ').value || '').trim().toLowerCase();
-  const box = document.getElementById('globalResults');
-  const hits = SEARCH_INDEX.filter(e => !q || (e.t + ' ' + e.s).toLowerCase().includes(q));
-  box.innerHTML = hits.length ? hits.map(e =>
-    '<a href="' + e.u + '"><span>' + e.t + '</span><span class="ssub">' + e.s + '</span></a>').join('')
-    : '<p class="hint">No matches. Try an extension name or a guide topic.</p>';
-}
-function copyUrl(id, btn){
-  const t = document.getElementById(id).textContent;
-  const done = () => { btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500); };
-  if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done, done); }
-  else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
-}
-applyThemeIcon();
+function openPanel(){document.getElementById('panel').classList.add('open');}
+function closePanel(){document.getElementById('panel').classList.remove('open');}
+function openDrawer(){var d=document.getElementById('drawer');if(!d)return;d.classList.add('open');var b=document.getElementById('backdrop');if(b&&window.innerWidth<768)b.classList.add('show');}
+function closeDrawer(){var d=document.getElementById('drawer');if(d)d.classList.remove('open');var b=document.getElementById('backdrop');if(b)b.classList.remove('show');}
+function toggleSec(h){var s=h.parentElement;s.classList.toggle('collapsed');var sp=h.querySelector('span');if(sp)sp.textContent=s.classList.contains('collapsed')?'\u25b8':'\u25be';}
+function setTheme(mode){if(mode==='light'){document.documentElement.setAttribute('data-theme','light');}else{document.documentElement.removeAttribute('data-theme');}try{localStorage.setItem('rsp-theme',mode);}catch(e){}document.querySelectorAll('.themeSwitch').forEach(function(c){c.checked=(mode!=='light');});}
+function onThemeSwitch(cb){setTheme(cb.checked?'dark':'light');}
+function openSearch(){closePanel();var m=document.getElementById('searchModal');m.classList.add('open');var q=document.getElementById('globalQ');q.value='';selIdx=-1;globalSearch();q.focus();}
+function closeSearch(){document.getElementById('searchModal').classList.remove('open');}
+var selIdx=-1;
+function paintSel(links){links.forEach(function(a,i){a.classList.toggle('sel',i===selIdx);});}
+function globalSearch(){var q=(document.getElementById('globalQ').value||'').trim().toLowerCase();var box=document.getElementById('globalResults');var hits=SEARCH_INDEX.filter(function(e){return !q||(e.s).toLowerCase().indexOf(q)>=0;});selIdx=-1;box.innerHTML=hits.length?hits.map(function(e){return '<a href="'+e.u+'"><span># '+e.s+'</span></a>';}).join(''):'<p class="hint">No results found.</p>';}
+document.addEventListener('keydown',function(e){var m=document.getElementById('searchModal');if(!m||!m.classList.contains('open'))return;if(e.key==='Escape'){closeSearch();return;}var links=document.querySelectorAll('#globalResults a');if(e.key==='ArrowDown'){e.preventDefault();if(links.length){selIdx=(selIdx+1)%links.length;paintSel(links);}}else if(e.key==='ArrowUp'){e.preventDefault();if(links.length){selIdx=(selIdx-1+links.length)%links.length;paintSel(links);}}else if(e.key==='Enter'){if(selIdx>=0&&links[selIdx]){window.location.href=links[selIdx].getAttribute('href');}}});
+(function(){var t='dark';try{t=localStorage.getItem('rsp-theme')||'dark';}catch(e){}setTheme(t);})();
 
 const EXTS = [{"name":"NHentai.xxx","sub":"all.nhentaixxx","badge":"NSFW \u00b7 1.6.12","cls":"nsfw","content":"nsfw","langs":["all","en","ja","zh"],"sources":4,"icon":"data:image/png;base64,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","apk":"https://pub-89e47025e7844f1eaf672a00cfdbba12.r2.dev/extensions/Tachiyomi__NHentai.xxx_v1.6.12_genre-flat.apk","hay":"nhentai.xxx all.nhentaixxx nhentai https://nhentai.xxx"}];
 
 function val(name){return document.querySelector('input[name="'+name+'"]:checked').value}
 function render(){
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const lang = document.getElementById('lang').value;
-  const sort = val('sort'), content = val('content');
-  let list = EXTS.filter(e => {
-    if (q && !(e.name.toLowerCase().includes(q) || e.sub.includes(q) || e.hay.includes(q))) return false;
-    if (lang !== 'any' && !e.langs.includes(lang)) return false;
+  var q = document.getElementById('q').value.trim().toLowerCase();
+  var lang = document.getElementById('lang').value;
+  var sort = val('sort'), content = val('content');
+  var list = EXTS.filter(function(e){
+    if (q && !(e.name.toLowerCase().indexOf(q)>=0 || e.sub.indexOf(q)>=0 || e.hay.indexOf(q)>=0)) return false;
+    if (lang !== 'any' && e.langs.indexOf(lang)<0) return false;
     if (content !== 'all' && e.content !== content) return false;
     return true;
   });
-  list.sort((a,b) => sort === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
-  document.getElementById('grid').innerHTML = list.map(e =>
-    '<div class="card"><img src="'+e.icon+'" alt=""><div class="meta"><div class="name">'+e.name+'</div>'+
+  list.sort(function(a,b){return sort === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);});
+  document.getElementById('grid').innerHTML = list.map(function(e){
+    return '<div class="card"><img src="'+e.icon+'" alt=""><div class="meta"><div class="name">'+e.name+'</div>'+
     '<div class="sub">'+e.sub+'</div></div>'+
     '<span class="badge '+e.cls+'">'+e.badge+'</span>'+
-    '<a class="dl" href="'+e.apk+'" download title="Download APK">↓</a></div>').join('');
+    '<a class="dl" href="'+e.apk+'" download title="Download APK">\u2193</a></div>';}).join('');
   document.getElementById('empty').classList.toggle('show', list.length === 0);
-  document.getElementById('cSrc').textContent = list.reduce((s,e)=>s+e.sources,0);
+  document.getElementById('cSrc').textContent = list.reduce(function(s,e){return s+e.sources;},0);
   document.getElementById('cExt').textContent = list.length + (list.length === 1 ? ' extension' : ' extensions');
 }
 (function(){
-  const params = new URLSearchParams(location.search);
-  const q0 = params.get('q');
+  var params = new URLSearchParams(location.search);
+  var q0 = params.get('q');
   if (q0) document.getElementById('q').value = q0;
   render();
 })();
 
+(function(){if(!/Android/i.test(navigator.userAgent)){var n=document.getElementById('osNotice');if(n)n.classList.add('show');var b=document.getElementById('addBtn');if(b)b.classList.add('disabled');}})();
 </script>
 </body>
 </html>
